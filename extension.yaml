@@ -2,7 +2,7 @@
 # https://firebase.google.com/docs/extensions/reference/extension-yaml
 
 name: modelpilot-router-firebase
-version: 0.3.0
+version: 1.0.0
 specVersion: v1beta
 
 displayName: LLM Router with ModelPilot

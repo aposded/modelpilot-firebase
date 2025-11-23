@@ -1,3 +1,9 @@
+## Version 1.0.0
+
+### Changes
+
+- Tested Extension and ensured it is ready for release
+
 ## Version 0.3.0
 
 ### Breaking Changes
