@@ -17,13 +17,18 @@ You can test out this extension right away!
 
 2. **Call the extension** from your app code:
 
+**Note:** Replace `{instanceId}` with your extension's instance ID. Find it in:
+
+- Firebase Console → Extensions → Your installed extension → Function name
+- Or Firebase Console → Functions → Look for `ext-modelpilot-router-firebase-XXXX-processPrompt`
+
 ```javascript
 import { getFunctions, httpsCallable } from 'firebase/functions';
 
 const functions = getFunctions();
 const processPrompt = httpsCallable(
   functions,
-  'ext-firestore-modelpilot-prompts-processPrompt'
+  'ext-modelpilot-router-firebase-{instanceId}-processPrompt'
 );
 
 try {
@@ -188,7 +193,7 @@ function useModelPilot() {
       const functions = getFunctions();
       const callable = httpsCallable(
         functions,
-        'ext-firestore-modelpilot-prompts-processPrompt'
+        'ext-modelpilot-router-firebase-{instanceId}-processPrompt'
       );
       const result = await callable({ promptId, context });
       return result.data;
@@ -214,7 +219,7 @@ initializeApp();
 
 exports.generateContent = functions.https.onCall(async (data, context) => {
   const processPrompt = getFunctions().httpsCallable(
-    'ext-firestore-modelpilot-prompts-processPrompt'
+    'ext-modelpilot-router-firebase-{instanceId}-processPrompt'
   );
 
   const result = await processPrompt({
@@ -239,7 +244,7 @@ Future<Map<String, dynamic>> processPrompt(
   Map<String, dynamic> context
 ) async {
   final callable = FirebaseFunctions.instance.httpsCallable(
-    'ext-firestore-modelpilot-prompts-processPrompt'
+    'ext-modelpilot-router-firebase-{instanceId}-processPrompt'
   );
 
   final result = await callable.call({

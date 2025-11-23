@@ -14,6 +14,13 @@ Initial release of the Process Prompts with ModelPilot extension.
 - **Template management** via Firestore for reusable prompts
 - **Cross-platform support** - Works with Web, iOS, Android, and Cloud Functions
 
+## Version 0.2.1
+
+### Bug Fixes
+
+- **Fixed CORS errors** - Added `invoker: public` to serviceConfig to properly allow Firebase SDK to call the function without CORS issues
+- **Updated documentation** - Corrected function name pattern in POSTINSTALL.md to match actual extension name
+
 ## Version 0.2.0
 
 ### Features
