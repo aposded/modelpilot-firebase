@@ -1,5 +1,13 @@
 {
+  "name": "modelpilot-router-firebase",
+  "version": "0.1.0-beta.0",
+  "scripts": {
+    "build": "cd functions && npm install && npm run build"
+  },
   "dependencies": {
     "modelpilot": "^1.0.3"
+  },
+  "devDependencies": {
+    "typescript": "^4.9.0"
   }
 }

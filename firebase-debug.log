@@ -1,0 +1,14 @@
+[debug] [2025-11-23T03:31:04.060Z] ----------------------------------------------------------------------
+[debug] [2025-11-23T03:31:04.061Z] Command:       /usr/local/bin/node /usr/local/bin/firebase ext:dev:upload modelpilot/modelpilot-router-firebase
+[debug] [2025-11-23T03:31:04.061Z] CLI Version:   14.15.2
+[debug] [2025-11-23T03:31:04.061Z] Platform:      darwin
+[debug] [2025-11-23T03:31:04.061Z] Node Version:  v20.11.0
+[debug] [2025-11-23T03:31:04.061Z] Time:          Sun Nov 23 2025 04:31:04 GMT+0100 (GMT+01:00)
+[debug] [2025-11-23T03:31:04.062Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2025-11-23T03:31:04.129Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-23T03:31:04.129Z] > authorizing via signed-in user (apostolosded@gmail.com)
+[info] i  extensions: ensuring required API firebaseextensionspublisher.googleapis.com is enabled... 
+[debug] [2025-11-23T03:31:04.130Z] Checked if tokens are valid: true, expires at: 1763870348813
+[debug] [2025-11-23T03:31:04.130Z] Checked if tokens are valid: true, expires at: 1763870348813
+[debug] [2025-11-23T03:31:04.131Z] >>> [apiv2][query] GET https://firebaseextensionspublisher.googleapis.com/v1beta/projects/-/publisherProfile publisherId=modelpilot
