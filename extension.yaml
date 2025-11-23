@@ -1,7 +1,7 @@
 # Learn detailed information about the fields of an extension.yaml file in the docs:
 # https://firebase.google.com/docs/extensions/reference/extension-yaml
 
-name: firestore-modelpilot-prompts
+name: modelpilot-router-firebase
 version: 0.1.0
 specVersion: v1beta
 
