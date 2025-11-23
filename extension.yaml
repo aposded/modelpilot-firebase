@@ -2,10 +2,10 @@
 # https://firebase.google.com/docs/extensions/reference/extension-yaml
 
 name: modelpilot-router-firebase
-version: 0.1.0
+version: 0.2.0
 specVersion: v1beta
 
-displayName: Process Prompts with ModelPilot
+displayName: LLM Router with ModelPilot
 
 description: >-
   Callable function to process AI prompts using ModelPilot intelligent routing, with support for Handlebars templates for dynamic personalization.
@@ -26,13 +26,17 @@ roles:
 
 resources:
   - name: processPrompt
-    type: firebaseextensions.v1beta.function
+    type: firebaseextensions.v1beta.v2function
     description: >-
       Callable function that processes prompts with AI using ModelPilot intelligent routing
     properties:
       location: ${LOCATION}
-      runtime: 'nodejs18'
-      httpsTrigger: {}
+      buildConfig:
+        runtime: nodejs20
+      serviceConfig:
+        availableMemory: 512M
+        timeoutSeconds: 60
+      callableTrigger: {}
 
 params:
   - param: LOCATION
