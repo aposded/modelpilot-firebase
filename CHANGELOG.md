@@ -1,3 +1,19 @@
+## Version 0.3.0
+
+### Breaking Changes
+
+- **Migrated to 1st-gen Cloud Functions** - Firebase Extensions require 1st-gen functions for callable triggers. Updated from `firebase-functions/v2` to `firebase-functions/v1` API.
+- **Updated extension.yaml** - Changed resource type from `firebaseextensions.v1beta.v2function` to `firebaseextensions.v1beta.function` with proper 1st-gen configuration.
+
+### Changes
+
+- Function signature updated to use `(data, context)` parameters instead of `(request)`
+- Logger usage changed from `logger.info()` to `functions.logger.info()`
+- HttpsError now imported from `firebase-functions/v1/https`
+- Extension properties structure updated to match 1st-gen format (runtime, availableMemoryMb, timeout, httpsTrigger)
+
+**Note:** This version is fully compatible with Firebase Extensions. No client-side changes are required - the function can still be called using the Firebase callable functions API from your app.
+
 ## Version 0.1.0
 
 Initial release of the Process Prompts with ModelPilot extension.

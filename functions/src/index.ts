@@ -4,8 +4,8 @@
  * with support for Handlebars templates for dynamic personalization
  */
 
-import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { logger } from 'firebase-functions/v2';
+import * as functions from 'firebase-functions/v1';
+import { https } from 'firebase-functions/v1';
 import * as admin from 'firebase-admin';
 import * as Handlebars from 'handlebars';
 import ModelPilot from 'modelpilot';
@@ -50,162 +50,164 @@ interface ProcessPromptRequest {
  *
  * @returns Object with response, metadata, and model information
  */
-export const processPrompt = onCall<ProcessPromptRequest>(async (request) => {
-  try {
-    // Validate required fields
-    if (!request.data.promptId) {
-      throw new HttpsError(
-        'invalid-argument',
-        'Missing required field: promptId'
-      );
-    }
-
-    // PREPROCESSING_FUNCTION_URL hook begins here
-    // If a preprocessing function is defined, call it before continuing
-    let processedData = request.data;
-    if (config.preprocessingFunctionUrl) {
-      try {
-        logger.info('Calling preprocessing function', {
-          url: config.preprocessingFunctionUrl,
-          promptId: request.data.promptId,
-        });
-
-        const preprocessResponse = await axios.post(
-          config.preprocessingFunctionUrl,
-          {
-            data: request.data,
-            auth: request.auth
-              ? {
-                  uid: request.auth.uid,
-                  token: request.auth.token,
-                }
-              : null,
-          },
-          {
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            timeout: 10000, // 10 second timeout
-          }
-        );
-
-        // Use the processed data returned from the preprocessing function
-        // The preprocessing function can modify promptId, context, or parameters
-        if (preprocessResponse.data && preprocessResponse.data.data) {
-          processedData = preprocessResponse.data.data;
-          logger.info('Preprocessing completed successfully');
-        }
-      } catch (error) {
-        // Preprocessing failure causes the function to fail
-        logger.error('Preprocessing error:', error);
-        throw new HttpsError(
-          'internal',
-          `Preprocessing function failed: ${
-            error instanceof Error ? error.message : 'Unknown error'
-          }`,
-          error
+export const processPrompt = https.onCall(
+  async (data: ProcessPromptRequest, context) => {
+    try {
+      // Validate required fields
+      if (!data.promptId) {
+        throw new https.HttpsError(
+          'invalid-argument',
+          'Missing required field: promptId'
         );
       }
-    }
-    // End of PREPROCESSING_FUNCTION_URL hook
 
-    // Fetch the prompt template from the prompts collection
-    const promptDoc = await admin
-      .firestore()
-      .collection(config.promptsCollection)
-      .doc(processedData.promptId)
-      .get();
+      // PREPROCESSING_FUNCTION_URL hook begins here
+      // If a preprocessing function is defined, call it before continuing
+      let processedData = data;
+      if (config.preprocessingFunctionUrl) {
+        try {
+          functions.logger.info('Calling preprocessing function', {
+            url: config.preprocessingFunctionUrl,
+            promptId: data.promptId,
+          });
 
-    if (!promptDoc.exists) {
-      throw new HttpsError(
-        'not-found',
-        `Prompt template not found: ${processedData.promptId}`
-      );
-    }
+          const preprocessResponse = await axios.post(
+            config.preprocessingFunctionUrl,
+            {
+              data: data,
+              auth: context.auth
+                ? {
+                    uid: context.auth.uid,
+                    token: context.auth.token,
+                  }
+                : null,
+            },
+            {
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              timeout: 10000, // 10 second timeout
+            }
+          );
 
-    const promptData = promptDoc.data();
-    if (!promptData?.template) {
-      throw new HttpsError(
-        'failed-precondition',
-        'Prompt template is missing "template" field'
-      );
-    }
+          // Use the processed data returned from the preprocessing function
+          // The preprocessing function can modify promptId, context, or parameters
+          if (preprocessResponse.data && preprocessResponse.data.data) {
+            processedData = preprocessResponse.data.data;
+            functions.logger.info('Preprocessing completed successfully');
+          }
+        } catch (error) {
+          // Preprocessing failure causes the function to fail
+          functions.logger.error('Preprocessing error:', error);
+          throw new https.HttpsError(
+            'internal',
+            `Preprocessing function failed: ${
+              error instanceof Error ? error.message : 'Unknown error'
+            }`,
+            error
+          );
+        }
+      }
+      // End of PREPROCESSING_FUNCTION_URL hook
 
-    // Compile and render the Handlebars template
-    const template = Handlebars.compile(promptData.template);
-    const renderedPrompt = template(processedData.context || {});
+      // Fetch the prompt template from the prompts collection
+      const promptDoc = await admin
+        .firestore()
+        .collection(config.promptsCollection)
+        .doc(processedData.promptId)
+        .get();
 
-    logger.info('Processing prompt', {
-      uid: request.auth?.uid,
-      promptId: processedData.promptId,
-      renderedPrompt,
-    });
+      if (!promptDoc.exists) {
+        throw new https.HttpsError(
+          'not-found',
+          `Prompt template not found: ${processedData.promptId}`
+        );
+      }
 
-    // Call ModelPilot API
-    const completion = await modelPilot.chat.create({
-      messages: [
-        {
-          role: 'user',
-          content: renderedPrompt,
-        },
-      ],
-      // Optional: allow caller to override these settings
-      max_tokens: processedData.maxTokens || promptData.maxTokens,
-      temperature: processedData.temperature ?? promptData.temperature,
-      top_p: processedData.topP ?? promptData.topP,
-    });
+      const promptData = promptDoc.data();
+      if (!promptData?.template) {
+        throw new https.HttpsError(
+          'failed-precondition',
+          'Prompt template is missing "template" field'
+        );
+      }
 
-    // Extract response content
-    const responseContent = completion.choices[0]?.message?.content || '';
+      // Compile and render the Handlebars template
+      const template = Handlebars.compile(promptData.template);
+      const renderedPrompt = template(processedData.context || {});
 
-    // Prepare metadata
-    const metadata: any = {
-      model: completion.model,
-      usage: completion.usage,
-      finishReason: completion.choices[0]?.finish_reason,
-      timestamp: new Date().toISOString(),
-    };
+      functions.logger.info('Processing prompt', {
+        uid: context.auth?.uid,
+        promptId: processedData.promptId,
+        renderedPrompt,
+      });
 
-    // Add ModelPilot-specific metadata if available
-    if (completion._meta) {
-      metadata.modelPilot = {
-        cost: completion._meta.cost,
-        latency: completion._meta.latency,
-        provider: completion._meta.modelUsed,
+      // Call ModelPilot API
+      const completion = await modelPilot.chat.create({
+        messages: [
+          {
+            role: 'user',
+            content: renderedPrompt,
+          },
+        ],
+        // Optional: allow caller to override these settings
+        max_tokens: processedData.maxTokens || promptData.maxTokens,
+        temperature: processedData.temperature ?? promptData.temperature,
+        top_p: processedData.topP ?? promptData.topP,
+      });
+
+      // Extract response content
+      const responseContent = completion.choices[0]?.message?.content || '';
+
+      // Prepare metadata
+      const metadata: any = {
+        model: completion.model,
+        usage: completion.usage,
+        finishReason: completion.choices[0]?.finish_reason,
+        timestamp: new Date().toISOString(),
       };
+
+      // Add ModelPilot-specific metadata if available
+      if (completion._meta) {
+        metadata.modelPilot = {
+          cost: completion._meta.cost,
+          latency: completion._meta.latency,
+          provider: completion._meta.modelUsed,
+        };
+      }
+
+      functions.logger.info('Successfully processed prompt', {
+        uid: context.auth?.uid,
+        promptId: processedData.promptId,
+        model: completion.model,
+        tokensUsed: completion.usage?.total_tokens,
+        cost: completion._meta?.cost,
+      });
+
+      // Return response directly to caller
+      return {
+        success: true,
+        response: responseContent,
+        metadata,
+      };
+    } catch (error) {
+      functions.logger.error('Error processing prompt', {
+        uid: context.auth?.uid,
+        promptId: data?.promptId,
+        error: error instanceof Error ? error.message : String(error),
+      });
+
+      // If it's already an HttpsError, rethrow it
+      if (error instanceof https.HttpsError) {
+        throw error;
+      }
+
+      // Otherwise, wrap it in an internal error
+      throw new https.HttpsError(
+        'internal',
+        error instanceof Error ? error.message : 'An unknown error occurred',
+        error
+      );
     }
-
-    logger.info('Successfully processed prompt', {
-      uid: request.auth?.uid,
-      promptId: processedData.promptId,
-      model: completion.model,
-      tokensUsed: completion.usage?.total_tokens,
-      cost: completion._meta?.cost,
-    });
-
-    // Return response directly to caller
-    return {
-      success: true,
-      response: responseContent,
-      metadata,
-    };
-  } catch (error) {
-    logger.error('Error processing prompt', {
-      uid: request.auth?.uid,
-      promptId: request.data?.promptId,
-      error: error instanceof Error ? error.message : String(error),
-    });
-
-    // If it's already an HttpsError, rethrow it
-    if (error instanceof HttpsError) {
-      throw error;
-    }
-
-    // Otherwise, wrap it in an internal error
-    throw new HttpsError(
-      'internal',
-      error instanceof Error ? error.message : 'An unknown error occurred',
-      error
-    );
   }
-});
+);
