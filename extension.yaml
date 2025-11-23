@@ -36,7 +36,7 @@ resources:
       serviceConfig:
         availableMemory: 512M
         timeoutSeconds: 60
-        invoker: public
+      httpsTrigger: {}
 
 params:
   - param: LOCATION
