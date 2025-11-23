@@ -1,0 +1,105 @@
+# Learn detailed information about the fields of an extension.yaml file in the docs:
+# https://firebase.google.com/docs/extensions/reference/extension-yaml
+
+name: firestore-modelpilot-prompts
+version: 0.1.0
+specVersion: v1beta
+
+displayName: Process Prompts with ModelPilot
+
+description: >-
+  Callable function to process AI prompts using ModelPilot intelligent routing, with support for Handlebars templates for dynamic personalization.
+
+license: Apache-2.0
+
+sourceUrl: https://github.com/aposded/modelpilot-firebase-extension
+
+billingRequired: true
+
+apis:
+  - apiName: firestore.googleapis.com
+    reason: Required to read prompt templates from Firestore
+
+roles:
+  - role: datastore.user
+    reason: Required to read prompt templates from Firestore
+
+resources:
+  - name: processPrompt
+    type: firebaseextensions.v1beta.function
+    description: >-
+      Callable function that processes prompts with AI using ModelPilot intelligent routing
+    properties:
+      location: ${LOCATION}
+      runtime: 'nodejs18'
+      httpsTrigger: {}
+
+params:
+  - param: LOCATION
+    label: Cloud Functions location
+    description: >-
+      Where do you want to deploy the functions created for this extension?
+      For help selecting a location, refer to the [location selection guide](https://firebase.google.com/docs/functions/locations).
+    type: select
+    options:
+      - label: Iowa (us-central1)
+        value: us-central1
+      - label: South Carolina (us-east1)
+        value: us-east1
+      - label: Northern Virginia (us-east4)
+        value: us-east4
+      - label: Los Angeles (us-west2)
+        value: us-west2
+      - label: Oregon (us-west1)
+        value: us-west1
+      - label: Belgium (europe-west1)
+        value: europe-west1
+      - label: London (europe-west2)
+        value: europe-west2
+      - label: Frankfurt (europe-west3)
+        value: europe-west3
+      - label: Hong Kong (asia-east2)
+        value: asia-east2
+      - label: Tokyo (asia-northeast1)
+        value: asia-northeast1
+      - label: Sydney (australia-southeast1)
+        value: australia-southeast1
+    required: true
+    immutable: true
+
+  - param: MODELPILOT_API_KEY
+    label: ModelPilot API Key
+    description: >-
+      Your ModelPilot API key. Get your API key from the ModelPilot dashboard at https://modelpilot.co/dashboard
+    type: secret
+    required: true
+    immutable: false
+
+  - param: MODELPILOT_ROUTER_ID
+    label: ModelPilot Router ID
+    description: >-
+      The ID of the ModelPilot router to use for processing prompts. Find your router ID in the ModelPilot dashboard.
+    type: string
+    required: true
+    immutable: false
+
+  - param: PROMPTS_COLLECTION
+    label: Prompts collection path
+    description: >-
+      The Firestore collection path where your prompt templates are stored.
+      Each document should have a 'template' field containing the prompt with optional Handlebars syntax.
+    type: string
+    default: prompts
+    required: true
+    immutable: false
+
+  - param: PREPROCESSING_FUNCTION_URL
+    label: Pre-processing function URL (optional)
+    description: >-
+      URL to an HTTPS callable Cloud Function that will be called to transform or validate
+      the input data before it is processed by ModelPilot. The function will receive the
+      request data (promptId, context, etc.) and can modify it or throw an error to prevent processing.
+      Leave empty to skip preprocessing.
+    type: string
+    example: https://us-central1-my-project-id.cloudfunctions.net/preprocessPrompt
+    required: false
