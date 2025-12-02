@@ -2,13 +2,15 @@
 # https://firebase.google.com/docs/extensions/reference/extension-yaml
 
 name: modelpilot-router-firebase
-version: 1.0.0
+version: 2.0.0
 specVersion: v1beta
 
 displayName: LLM Router with ModelPilot
 
 description: >-
   Callable function to process AI prompts using ModelPilot intelligent routing, with support for Handlebars templates for dynamic personalization.
+
+icon: icon.png
 
 license: Apache-2.0
 
@@ -21,8 +23,12 @@ apis:
     reason: Required to read prompt templates from Firestore
 
 roles:
-  - role: datastore.user
+  - role: datastore.viewer
     reason: Required to read prompt templates from Firestore
+
+externalServices:
+  - name: ModelPilot API used via the modelpilot SDK
+    pricingUri: https://modelpilot.co/pricing
 
 resources:
   - name: processPrompt
