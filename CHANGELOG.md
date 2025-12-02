@@ -1,3 +1,9 @@
+## Version 2.0.0
+
+### Changes
+
+- Improved accuracy on extension.yaml and reduced permissions to the absolute necessary.
+
 ## Version 1.0.0
 
 ### Changes
